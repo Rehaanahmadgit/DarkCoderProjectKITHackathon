@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>School Bus Tracker</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 500px;
+  margin: 0 auto;
+}
+
+.map {
+  width: 100%;
+  height: 500px;
+}
+
+.info {
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="map"></div>
+  <div class="info">
+    <h2>School Bus Tracker</h2>
+    <p>This website allows you to track the location of your school bus.</p>
+    <p>To use the tracker, simply enter your bus number below.</p>
+    <input type="text" id="busNumber" placeholder="Bus Number">
+    <button id="trackBus">Track Bus</button>
+    <p id="status"></p>
+  </div>
+</div>
+
+<script>
+$(document).ready(function() {
+  var map = new google.maps.Map(document.getElementById("map"), {
+    center: {
+      lat: 37.7752,
+      lng: -122.4189
+    },
+    zoom: 12
+  });
+
+  var busMarkers = [];
+
+  function trackBus(busNumber) {
+    $.ajax({
+      url: "/api/bus/" + busNumber,
+      success: function(data) {
+        if (data.success) {
+          var bus = data.data;
+          var marker = new google.maps.Marker({
+            position: {
+              lat: bus.latitude,
+              lng: bus.longitude
+            },
+            map: map
+          });
+          busMarkers.push(marker);
+          updateStatus("Bus " + busNumber + " is now being tracked.");
+        } else {
+          updateStatus("Error tracking bus " + busNumber);
+        }
+      },
+      error: function(xhr, status, error) {
+        updateStatus("Error tracking bus " + busNumber + ": " + error);
+      }
+    });  }
+
+  $("#trackBus").on("click", function() {
+    var busNumber = $("#busNumber").val();
+    if(busNumber === "5543" || busNumber === "454" || busNumber === "2123" || busNumber === "2344"){
+        trackBus(busNumber);
+    }else{
+        updateStatus("Bus number not found!");
+    }
+  });
+
+  function updateStatus(message) {
+    $("#status").text(message);
+  }
+});
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+</body>
+</html>
